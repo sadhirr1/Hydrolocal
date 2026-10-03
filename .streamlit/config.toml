@@ -1,0 +1,8 @@
+[browser]
+# Streamlit sends anonymous usage statistics by default. Turn that off so
+# nothing about using the app leaves this computer.
+gatherUsageStats = false
+
+[server]
+# Only this computer can open the app (no network address for other devices).
+address = "localhost"

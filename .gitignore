@@ -1,0 +1,9 @@
+# private writing draft - not part of the project
+DEV_POST_DRAFT.md
+
+# Python leftovers
+__pycache__/
+*.pyc
+.pytest_cache/
+.venv/
+venv/
