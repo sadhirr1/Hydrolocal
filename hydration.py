@@ -4,10 +4,10 @@ Pure Python: no AI, no network. The NUMBERS come from this file so they are
 predictable and checkable. The local AI model (see llm.py) only writes the
 friendly explanation around them.
 
-IMPORTANT: every constant below is a rough rule of thumb chosen for a hobby
-project. They are NOT medical advice and have not been clinically validated.
-Adjust them freely, and check them against a trusted source before relying
-on them.
+IMPORTANT: the constants below are rough estimates for a hobby project. Each
+one is tagged with where it comes from: a published source, or my own choice.
+None of this is medical advice and none of it has been clinically validated.
+Adjust freely, and check against a trusted source before relying on it.
 """
 from __future__ import annotations
 
@@ -16,21 +16,39 @@ from datetime import datetime, timedelta, timezone
 from typing import List, Optional
 
 # ---------------------------------------------------------------------------
-# Rule-of-thumb constants (adjustable, NOT medical advice)
+# Constants (adjustable, NOT medical advice). Where each one comes from:
+#
+#   [NIOSH]  US CDC/NIOSH hot-work hydration guidance: 1 cup (8 oz, about 237 ml)
+#            every 15-20 minutes, i.e. 24-32 oz (about 710-950 ml) per hour, and
+#            never more than 48 oz (about 1.4 L) per hour. It also says to start
+#            work already hydrated and to prefer frequent small drinks.
+#   [NASEM]  US National Academies adequate intake for TOTAL water: about 2.7 L
+#            a day for women and 3.7 L for men, roughly 80% of it from drinks.
+#   [MINE]   My own estimate. Not from a published source.
 # ---------------------------------------------------------------------------
-HEAT_ML_PER_HOUR = {"Cool": 250, "Warm": 400, "Hot": 600}   # fluid per hour of work
+HEAT_ML_PER_HOUR = {                 # fluid per working hour, before the factors below
+    "Cool": 200,   # [NASEM + MINE] about 3.2 L (midpoint) x 80% from drinks / 16 waking
+                   # hours = about 160 ml/h, rounded up a little for working
+    "Warm": 350,   # [MINE] sits between the two sourced ends
+    "Hot": 710,    # [NIOSH] the low end of 24-32 oz per hour
+}
 ACTIVITY_FACTOR = {"Light": 1.0, "Moderate": 1.15, "Heavy": 1.3}
-REFERENCE_WEIGHT_KG = 70.0        # per-hour numbers are scaled around this weight
-WEIGHT_FACTOR_MIN = 0.8
-WEIGHT_FACTOR_MAX = 1.3
-MAX_ML_PER_HOUR = 1000            # never suggest more than this per hour
-MAX_ML_PER_SITTING = 600          # don't suggest gulping more than this at once
-PRE_SHIFT_ML = 400                # a drink before the shift / trek starts
-POST_SHIFT_ML = 300               # a drink after the shift ends
-EVERYDAY_ML_PER_KG = 30           # rough everyday daily total, per kg body weight
-TREK_RESERVE_FRACTION = 0.20      # keep this share of carried water in reserve
-TICK_MINUTES_SHIFT = 30           # reminder spacing when water is at the station
-TICK_MINUTES_TREK = 20            # sip spacing on a trek
+                   # [NIOSH + MINE] 1.0 to 1.3 spans NIOSH's 24-32 oz range for hot
+                   # work. Applying it to cooler conditions as well is my extension.
+REFERENCE_WEIGHT_KG = 70.0         # [MINE] scaling by body weight is my adjustment
+WEIGHT_FACTOR_MIN = 0.8            # [MINE]
+WEIGHT_FACTOR_MAX = 1.3            # [MINE]
+MAX_ML_PER_HOUR = 950              # [NIOSH] never above the top of NIOSH's range
+                                   # (32 oz is about 946 ml); NIOSH's hard limit is 48 oz/h
+MAX_ML_PER_SITTING = 600           # [MINE] NIOSH favours frequent small drinks over big gulps
+PRE_SHIFT_ML = 400                 # [MINE] NIOSH says start hydrated; the amount is mine
+POST_SHIFT_ML = 300                # [MINE]
+EVERYDAY_ML_PER_KG = 35            # [NASEM + MINE] 35 ml/kg gives about 2.2-2.9 L, which is
+                                   # the NASEM drinks range, for adults of roughly 62-84 kg
+TREK_RESERVE_FRACTION = 0.20       # [MINE] keep this share of carried water in reserve
+TICK_MINUTES_SHIFT = 30            # [MINE] reminder spacing when water is at the station
+TICK_MINUTES_HOT = 20              # [NIOSH] hot work: a drink every 15-20 minutes
+TICK_MINUTES_TREK = 20             # [MINE] sip spacing on a trek
 
 
 @dataclass
@@ -98,12 +116,13 @@ def shift_plan(
     plan.events.append(DrinkEvent(start - timedelta(minutes=30), "Before you clock in", PRE_SHIFT_ML))
 
     if water_at_station:
-        tick = round_to(hourly * TICK_MINUTES_SHIFT / 60, 50)
+        step = TICK_MINUTES_HOT if heat == "Hot" else TICK_MINUTES_SHIFT
+        tick = round_to(hourly * step / 60, 50)
         times = []
-        t = start + timedelta(minutes=TICK_MINUTES_SHIFT)
+        t = start + timedelta(minutes=step)
         while t < end:
             times.append(t)
-            t += timedelta(minutes=TICK_MINUTES_SHIFT)
+            t += timedelta(minutes=step)
         # snap reminders that fall near a break onto the break itself
         times = [x for x in times if all(abs((x - b).total_seconds()) > 15 * 60 for b in breaks)]
         for x in times:

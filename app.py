@@ -154,6 +154,19 @@ with tab_trek:
     if "trek" in st.session_state:
         show(*st.session_state["trek"], key="trek")
 
+with st.expander("Where do these numbers come from?"):
+    st.markdown(
+        "- **Hot work:** the US CDC/NIOSH guidance of about 1 cup (8 oz) every 15-20 minutes, "
+        "which is 24-32 oz (about 710-950 ml) per hour, and never more than 48 oz per hour. "
+        "HydroLocal never suggests more than the top of that range.\n"
+        "- **Comfortable conditions:** the US National Academies adequate intake for total "
+        "water (about 2.7 L a day for women and 3.7 L for men, roughly 80% of it from drinks), "
+        "spread over waking hours.\n"
+        "- **Everything in between** (the 'warm' level, the body-weight scaling, the drinks "
+        "before and after a shift, the trek reserve) is my own estimate, not from a source.\n\n"
+        "These are general estimates, not medical advice. Details are in `hydration.py`."
+    )
+
 st.divider()
 st.caption(
     "Open-weight model + local server + your data stays here. "

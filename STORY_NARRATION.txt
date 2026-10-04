@@ -1,0 +1,15 @@
+A friend of mine works on a production line. He finds it hard to keep track of how much water he drinks during a shift, and he gets dehydrated quickly. When the work is busy, it's easy for a glass of water to slip down the list, and the day goes by without it.
+
+I see something similar closer to home. My sister needs my mom to remind her to drink water, again and again.
+
+That got me thinking: what if the reminder could come from something that isn't a person?
+
+So this weekend I built Hydro Local, for my friend. I had never written code before. I worked with AI tools, described what I wanted, tested it, and kept fixing it until it worked.
+
+You tell it your shift, your breaks, and how warm and physical your work is, and it builds a simple drinking schedule around your day. It can turn that schedule into reminders that you put straight onto your phone.
+
+And all of it runs on my own laptop. A small open model called Gemma writes a short, friendly note, and nothing goes to the cloud. Health habits feel personal, and I didn't want someone else's server to be where a friend's shift pattern ends up.
+
+It's not medical advice, and it can't tell anyone why they feel unwell. It's just a small nudge at the right moment. It's open source, so anyone can use it, change it, and make it better.
+
+Thank you for listening.

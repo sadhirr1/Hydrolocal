@@ -10,6 +10,33 @@ def t(h, m=0):
     return D.replace(hour=h, minute=m)
 
 
+def test_hot_work_matches_niosh_range():
+    """NIOSH: 24-32 oz per hour (about 710-950 ml) for hot work."""
+    assert hy.hourly_need_ml(70, "Hot", "Light") == 710
+    assert hy.hourly_need_ml(70, "Hot", "Heavy") <= 950
+    assert hy.MAX_ML_PER_HOUR <= 950
+
+
+def test_hot_work_reminders_every_20_minutes():
+    p = hy.shift_plan(t(8), t(12), [], 70, "Hot", "Moderate", True)
+    sips = [e for e in p.events if e.label == "Sip at your station"]
+    gaps = {(b.when - a.when).seconds // 60 for a, b in zip(sips, sips[1:])}
+    assert gaps == {20}
+
+
+def test_cool_work_stays_inside_daily_adequate_intake():
+    """A cool 8-hour shift should not by itself exceed the NASEM drinks range (2.96 L)."""
+    p = hy.shift_plan(t(8), t(16), [], 70, "Cool", "Moderate", True)
+    need = int(p.headline["Estimated need for the whole shift"].split()[0].replace(".", "")) * 100
+    assert need <= 3000
+
+
+def test_everyday_target_is_inside_nasem_drinks_range_for_typical_weights():
+    for kg in (63, 70, 84):
+        total = kg * hy.EVERYDAY_ML_PER_KG
+        assert 2160 <= total <= 2960
+
+
 def test_hourly_need_scales_with_heat():
     cool = hy.hourly_need_ml(70, "Cool", "Moderate")
     hot = hy.hourly_need_ml(70, "Hot", "Moderate")
